@@ -1,0 +1,2264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>微信</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;
+  background:radial-gradient(circle at 50% 0%,#3a3a40,#1c1c1f 70%);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;color:#191919;font-size:16px;}
+button,input,textarea{font-family:inherit;color:inherit;}
+::-webkit-scrollbar{width:0;height:0;}
+
+.phone{position:relative;width:400px;height:844px;background:#ededed;border-radius:46px;display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 0 0 11px #141416,0 0 0 13px #3d3d42,0 34px 70px rgba(0,0,0,.6);}
+.island{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:104px;height:26px;background:#0b0b0c;border-radius:14px;z-index:90;}
+
+.content{flex:1;position:relative;overflow:hidden;background:#ededed;}
+.page{position:absolute;inset:0;display:none;flex-direction:column;background:#ededed;}
+.page.active{display:flex;}
+.navbar{flex-shrink:0;height:44px;position:relative;display:flex;align-items:center;justify-content:center;background:#ededed;}
+.navbar h1{font-size:17px;font-weight:600;}
+.nav-right{position:absolute;right:14px;top:0;height:100%;display:flex;align-items:center;gap:18px;}
+.nav-right button{background:none;border:0;padding:0;cursor:pointer;line-height:0;}
+.nav-right svg{width:22px;height:22px;stroke:#191919;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;}
+
+.empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#c0c0c0;padding-bottom:60px;}
+.empty svg{width:74px;height:74px;fill:#d8d8d8;}
+.empty p{font-size:14.5px;color:#b8b8b8;}
+.empty small{font-size:12.5px;color:#ccc;}
+
+.avatar{display:flex;align-items:center;justify-content:center;border-radius:6px;flex-shrink:0;user-select:none;font-size:26px;line-height:1;overflow:hidden;}
+
+.c-item{display:flex;gap:12px;padding:11px 16px;background:#fff;position:relative;cursor:pointer;}
+.c-item:active{background:#e8e8e8;}
+.c-item::after{content:"";position:absolute;left:76px;right:0;bottom:0;height:1px;background:#e6e6e6;transform:scaleY(.6);}
+.c-item:last-child::after{display:none;}
+.c-main{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:5px;}
+.c-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+.c-name{font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.c-time{font-size:12px;color:#b2b2b2;flex-shrink:0;}
+.c-bot{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.c-prev{font-size:13.5px;color:#9a9a9a;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.c-prev.video{color:#576b95;}
+.badge{background:#fa5151;color:#fff;font-size:11px;line-height:1;min-width:18px;height:18px;border-radius:9px;padding:0 5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:500;}
+
+.cell-group{background:#fff;margin-bottom:9px;}
+.cell{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#fff;position:relative;cursor:pointer;}
+.cell:active{background:#e8e8e8;}
+.cell::after{content:"";position:absolute;left:62px;right:0;bottom:0;height:1px;background:#ececec;transform:scaleY(.6);}
+.cell:last-child::after{display:none;}
+.cell .ico{width:38px;height:38px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:19px;}
+.cell .txt{flex:1;font-size:16px;}
+.cell .chev{width:16px;height:16px;flex-shrink:0;}
+.cell .chev path{stroke:#c8c8c8;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+.letter-head{padding:5px 16px;font-size:13px;color:#888;background:#ededed;font-weight:500;position:sticky;top:0;z-index:2;}
+.index-bar{position:absolute;right:3px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:1px;z-index:5;padding:6px 5px;border-radius:14px;}
+.index-bar span{font-size:10.5px;color:#666;text-align:center;line-height:1.28;cursor:pointer;width:14px;font-weight:500;}
+.index-bar span:active{color:#07c160;}
+
+.disc-ico{width:26px;height:26px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;}
+.dot-red{width:9px;height:9px;border-radius:50%;background:#fa5151;flex-shrink:0;}
+.me-header{display:flex;align-items:center;gap:15px;background:#fff;padding:26px 18px 22px;margin-bottom:9px;cursor:pointer;}
+.me-header:active{background:#f2f2f2;}
+.me-header .avatar{width:62px;height:62px;font-size:34px;border-radius:9px;}
+.me-name{font-size:21px;font-weight:600;margin-bottom:6px;}
+.me-id{font-size:14px;color:#9a9a9a;}
+
+.tabbar{flex-shrink:0;height:56px;display:flex;background:#f7f7f7;border-top:1px solid #e0e0e0;position:relative;z-index:40;}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:none;border:0;cursor:pointer;color:#7a7a7a;font-size:10.5px;position:relative;transition:color .15s;}
+.tab svg{width:26px;height:26px;display:block;}
+.tab.active{color:#07c160;}
+.tab-badge{position:absolute;top:4px;left:50%;margin-left:6px;background:#fa5151;color:#fff;font-size:10px;line-height:1;min-width:16px;height:16px;border-radius:8px;padding:0 4px;display:flex;align-items:center;justify-content:center;font-weight:500;}
+
+.chat-view{position:absolute;left:0;right:0;bottom:0;top:0;background:#ededed;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);z-index:70;}
+.chat-view.open{transform:translateX(0);}
+.chat-header{flex-shrink:0;height:44px;display:flex;align-items:center;background:#ededed;padding:0 10px;position:relative;}
+.back-btn{background:none;border:0;padding:0 4px 0 0;cursor:pointer;line-height:0;display:flex;align-items:center;}
+.back-btn svg{width:22px;height:22px;stroke:#191919;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.chat-title{position:absolute;left:50%;transform:translateX(-50%);font-size:17px;font-weight:600;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.chat-more{margin-left:auto;background:none;border:0;cursor:pointer;padding:0 4px;line-height:0;}
+.chat-more svg{width:22px;height:22px;fill:#191919;}
+.chat-body{flex:1;overflow-y:auto;padding:14px 14px 6px;overscroll-behavior:contain;}
+.time-divider{text-align:center;font-size:11.5px;color:#a8a8a8;margin:4px 0 16px;}
+.msg{display:flex;gap:9px;margin-bottom:16px;align-items:flex-start;}
+.msg .avatar{width:38px;height:38px;font-size:21px;}
+.bubble{position:relative;max-width:72%;background:#fff;border-radius:5px;padding:9px 12px;font-size:15px;line-height:1.5;word-break:break-word;white-space:pre-wrap;box-shadow:0 1px 1px rgba(0,0,0,.03);}
+.bubble::before{content:"";position:absolute;top:12px;left:-5px;border-top:5px solid transparent;border-bottom:5px solid transparent;border-right:5px solid #fff;}
+.msg.me{flex-direction:row-reverse;}
+.msg.me .bubble{background:#95ec69;}
+.msg.me .bubble::before{left:auto;right:-5px;border-right:0;border-left:5px solid #95ec69;}
+
+.video-bubble{position:relative;padding:0!important;overflow:hidden;background:#000!important;border-radius:8px;width:200px;max-width:72%;flex:none;cursor:pointer;}
+.video-bubble::before{display:none!important;}
+.video-bubble video{display:block;width:100%;height:auto;max-height:300px;background:#000;vertical-align:middle;pointer-events:none;object-fit:cover;}
+.video-empty{width:200px;height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;background:#2b2b2b!important;border-radius:8px;cursor:default;}
+.video-empty .vc-icon{font-size:30px;line-height:1;}
+.video-empty .vc-txt{font-size:12.5px;color:#c9c9c9;}
+.video-dur{position:absolute;right:6px;bottom:6px;font-size:11px;color:#fff;background:rgba(0,0,0,.55);padding:1px 5px;border-radius:3px;pointer-events:none;letter-spacing:.3px;}
+.play-btn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.42);color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;padding-left:4px;pointer-events:none;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);}
+
+.video-overlay{position:absolute;inset:0;background:#000;z-index:200;display:none;overflow:hidden;}
+.video-overlay.show{display:block;}
+.vo-video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;display:block;cursor:pointer;}
+.vo-ui{position:absolute;inset:0;opacity:0;transition:opacity .25s ease;pointer-events:none;}
+.vo-ui.show{opacity:1;}
+.vo-top{position:absolute;top:0;left:0;right:0;padding:22px 14px 0;height:90px;background:linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,0));display:flex;align-items:flex-start;}
+.vo-close{width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.16);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);transition:background .15s;pointer-events:auto;}
+.vo-close:active{background:rgba(255,255,255,.3);}
+.vo-close svg{width:17px;height:17px;stroke:#fff;stroke-width:2;fill:none;stroke-linecap:round;}
+.vo-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;transition:opacity .2s ease,visibility .2s ease;}
+.vo-center.hidden{opacity:0;visibility:hidden;}
+.vo-toggle{width:66px;height:66px;border-radius:50%;border:0;background:rgba(0,0,0,.42);color:#fff;font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding-left:3px;pointer-events:auto;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);transition:background .15s,transform .12s;}
+.vo-toggle:active{background:rgba(0,0,0,.6);transform:scale(.94);}
+.vo-speed-wrap{position:absolute;right:16px;bottom:46px;z-index:8;display:flex;flex-direction:column;align-items:flex-end;gap:6px;pointer-events:auto;}
+.vo-speed{border:0;background:rgba(255,255,255,.18);color:#fff;font-size:12px;line-height:1;padding:6px 10px;border-radius:11px;cursor:pointer;letter-spacing:.3px;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);transition:background .15s,transform .12s;user-select:none;white-space:nowrap;}
+.vo-speed:active{background:rgba(255,255,255,.34);transform:scale(.94);}
+.vo-speed.open{background:rgba(7,193,96,.85);}
+.vo-speed-menu{display:none;flex-direction:column;background:rgba(30,30,30,.94);border-radius:10px;padding:4px 0;min-width:84px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
+.vo-speed-menu.show{display:flex;}
+.vo-speed-menu button{border:0;background:none;color:#e8e8e8;font-size:12.5px;padding:9px 14px;cursor:pointer;text-align:center;white-space:nowrap;transition:background .12s,color .12s;}
+.vo-speed-menu button:active{background:rgba(255,255,255,.12);}
+.vo-speed-menu button.active{color:#07c160;font-weight:600;}
+.vo-bottom{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:8px;padding:26px 16px 22px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.6));pointer-events:none;}
+.vo-time{font-size:11.5px;color:#fff;font-variant-numeric:tabular-nums;flex-shrink:0;min-width:38px;text-align:center;text-shadow:0 1px 2px rgba(0,0,0,.5);letter-spacing:.3px;}
+.vo-bar-wrap{flex:1;height:26px;display:flex;align-items:center;cursor:pointer;touch-action:none;pointer-events:auto;}
+.vo-bar-bg{width:100%;height:3px;border-radius:2px;background:rgba(255,255,255,.3);overflow:hidden;}
+.vo-bar{height:100%;width:0;border-radius:2px;background:#fff;}
+
+.chat-input{flex-shrink:0;background:#f7f7f7;border-top:1px solid #e0e0e0;padding:8px 10px 10px;position:relative;}
+.input-row{display:flex;align-items:flex-end;gap:8px;}
+.ib-btn{width:34px;height:34px;flex-shrink:0;border:0;background:none;font-size:22px;line-height:1;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;border-radius:6px;}
+.ib-btn:active{background:#e6e6e6;}
+#msgInput{flex:1;min-height:36px;max-height:88px;resize:none;border:0;outline:none;background:#fff;border-radius:6px;padding:8px 11px;font-size:15px;line-height:1.4;overflow-y:auto;}
+#msgInput::placeholder{color:#b8b8b8;}
+.send-btn{flex-shrink:0;height:36px;padding:0 16px;border:0;border-radius:6px;background:#07c160;color:#fff;font-size:14.5px;cursor:pointer;transition:.15s;display:block;}
+.send-btn:active{background:#06ad56;}
+.send-btn:disabled{background:#dcdcdc;cursor:default;}
+.emoji-panel{position:absolute;left:10px;right:10px;bottom:100%;margin-bottom:6px;background:#fff;border-radius:10px;padding:10px;box-shadow:0 8px 26px rgba(0,0,0,.15);display:none;grid-template-columns:repeat(8,1fr);gap:4px;z-index:20;}
+.emoji-panel.show{display:grid;}
+.emoji-panel span{font-size:22px;text-align:center;padding:3px;border-radius:6px;cursor:pointer;line-height:1;user-select:none;}
+.emoji-panel span:active{background:#f0f0f0;}
+
+.settings-view{position:absolute;left:0;right:0;bottom:0;top:0;background:#ededed;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);z-index:85;}
+.settings-view.open{transform:translateX(0);}
+.settings-header{flex-shrink:0;height:44px;display:flex;align-items:center;background:#ededed;padding:0 10px;position:relative;}
+.settings-title{position:absolute;left:50%;transform:translateX(-50%);font-size:17px;font-weight:600;}
+.settings-body{flex:1;overflow-y:auto;padding-bottom:24px;}
+.settings-group-title{padding:12px 16px 6px;font-size:13px;color:#888;font-weight:500;}
+.settings-group{background:#fff;}
+.settings-cell{display:flex;align-items:center;gap:12px;padding:13px 16px;background:#fff;position:relative;cursor:pointer;}
+.settings-cell:active{background:#e8e8e8;}
+.settings-cell::after{content:"";position:absolute;left:62px;right:0;bottom:0;height:1px;background:#ececec;transform:scaleY(.6);}
+.settings-cell:last-child::after{display:none;}
+.settings-cell .txt{flex:1;font-size:16px;}
+.settings-cell .sub{font-size:13px;color:#9a9a9a;}
+.settings-cell .chev{width:16px;height:16px;flex-shrink:0;}
+.settings-cell .chev path{stroke:#c8c8c8;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+
+.records-view,.messages-view{position:absolute;left:0;right:0;bottom:0;top:0;background:#ededed;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);}
+.records-view{z-index:88;}
+.messages-view{z-index:91;}
+.records-view.open,.messages-view.open{transform:translateX(0);}
+.records-header{flex-shrink:0;height:44px;display:flex;align-items:center;background:#ededed;padding:0 10px;position:relative;}
+.records-title{position:absolute;left:50%;transform:translateX(-50%);font-size:17px;font-weight:600;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.records-select-btn{margin-left:auto;background:none;border:0;padding:0 4px;font-size:15px;color:#07c160;cursor:pointer;line-height:1;height:100%;visibility:visible;}
+.records-body{flex:1;overflow-y:auto;padding-bottom:16px;transition:padding-bottom .2s;}
+.records-view.multi .records-body,.messages-view.multi .records-body{padding-bottom:76px;}
+.records-tip{padding:12px 16px 6px;font-size:12.5px;color:#a0a0a0;line-height:1.5;}
+.records-group{background:#fff;}
+.records-item{display:flex;align-items:center;gap:12px;padding:10px 16px;position:relative;cursor:pointer;}
+.records-item:active{background:#f0f0f0;}
+.records-item::after{content:"";position:absolute;left:68px;right:0;bottom:0;height:1px;background:#ececec;transform:scaleY(.6);}
+.records-item:last-child::after{display:none;}
+.records-item-main{flex:1;min-width:0;}
+.records-item-name{font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.records-item-sub{font-size:12.5px;color:#9a9a9a;margin-top:3px;}
+.records-del{flex-shrink:0;border:0;background:#fa5151;color:#fff;font-size:13px;padding:6px 14px;border-radius:6px;cursor:pointer;transition:background .15s;}
+.records-del:active{background:#e04545;}
+.records-check{width:22px;height:22px;border-radius:50%;flex-shrink:0;border:1.5px solid #ccc;background:#fff;display:none;align-items:center;justify-content:center;transition:background .15s,border-color .15s;box-sizing:border-box;}
+.records-view.multi .records-item .records-check,.messages-view.multi .msg-record-item .records-check{display:flex;}
+.records-view.multi .records-item .records-del,.messages-view.multi .msg-record-item .records-del{display:none;}
+.records-item.checked .records-check,.msg-record-item.checked .records-check{background:#07c160;border-color:#07c160;}
+.records-check svg{width:13px;height:13px;stroke:#fff;stroke-width:2.6;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity .12s;}
+.records-item.checked .records-check svg,.msg-record-item.checked .records-check svg{opacity:1;}
+.records-empty{padding:60px 0;text-align:center;color:#aaa;font-size:13.5px;}
+.records-footer{position:absolute;left:0;right:0;bottom:0;height:64px;background:#fff;border-top:1px solid #e0e0e0;display:none;align-items:center;justify-content:space-between;padding:0 16px;gap:12px;z-index:5;}
+.records-view.multi .records-footer,.messages-view.multi .records-footer{display:flex;}
+.records-footer .all-btn{border:0;background:none;color:#191919;font-size:15px;cursor:pointer;padding:6px 8px;display:flex;align-items:center;gap:7px;}
+.records-footer .all-btn .records-check{display:flex;}
+.records-footer .del-btn{border:0;background:#fa5151;color:#fff;font-size:15px;padding:9px 22px;border-radius:6px;cursor:pointer;transition:background .15s,opacity .15s;}
+.records-footer .del-btn:active{background:#e04545;}
+.records-footer .del-btn:disabled{background:#f0b3b3;cursor:default;}
+.msg-record-item{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fff;position:relative;cursor:pointer;}
+.msg-record-item:active{background:#f0f0f0;}
+.msg-record-item::after{content:"";position:absolute;left:52px;right:0;bottom:0;height:1px;background:#ececec;transform:scaleY(.6);}
+.msg-record-item:last-child::after{display:none;}
+.msg-record-main{flex:1;min-width:0;}
+.msg-record-text{font-size:15px;color:#191919;line-height:1.45;word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap;}
+.msg-record-text.video{color:#576b95;}
+.msg-record-text.from-me::before{content:"我：";color:#9a9a9a;}
+.msg-record-sub{font-size:12px;color:#9a9a9a;margin-top:4px;}
+
+.plus-menu{position:absolute;top:44px;right:4px;background:#4c4c4c;border-radius:8px;padding:4px 0;min-width:148px;box-shadow:0 8px 24px rgba(0,0,0,.35);z-index:96;opacity:0;visibility:hidden;transform:translateY(-6px);transition:opacity .18s ease,transform .18s ease,visibility .18s;transform-origin:top right;}
+.plus-menu.show{opacity:1;visibility:visible;transform:translateY(0);}
+.plus-menu::before{content:"";position:absolute;top:-6px;right:15px;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:6px solid #4c4c4c;}
+.plus-menu-item{display:flex;align-items:center;gap:10px;padding:11px 16px;color:#fff;font-size:15px;cursor:pointer;white-space:nowrap;transition:background .12s;}
+.plus-menu-item:active{background:rgba(255,255,255,.12);}
+.plus-menu-item .pm-ico{font-size:16px;width:20px;text-align:center;line-height:1;}
+.plus-menu-item:not(:last-child){border-bottom:1px solid rgba(255,255,255,.06);}
+
+.scan-view{position:absolute;inset:0;background:#000;z-index:210;overflow:hidden;transform:translateY(100%);transition:transform .32s cubic-bezier(.32,.72,0,1);}
+.scan-view.open{transform:translateY(0);}
+.scan-camera{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;display:block;z-index:0;}
+.scan-ui{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;}
+.scan-header{flex-shrink:0;height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,0));}
+.scan-header .scan-close{background:rgba(0,0,0,.35);border:0;color:#fff;font-size:18px;cursor:pointer;padding:6px 10px;line-height:1;border-radius:50%;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
+.scan-title{font-size:16px;font-weight:500;color:#fff;position:absolute;left:50%;transform:translateX(-50%);text-shadow:0 1px 3px rgba(0,0,0,.6);}
+.scan-header .scan-placeholder{width:32px;}
+.scan-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding-bottom:40px;}
+.scan-frame{position:relative;width:236px;height:236px;border-radius:4px;background:transparent;}
+.scan-corner{position:absolute;width:26px;height:26px;border-color:#07c160;box-sizing:border-box;}
+.scan-corner.tl{top:0;left:0;border-top:3px solid #07c160;border-left:3px solid #07c160;border-top-left-radius:6px;}
+.scan-corner.tr{top:0;right:0;border-top:3px solid #07c160;border-right:3px solid #07c160;border-top-right-radius:6px;}
+.scan-corner.bl{bottom:0;left:0;border-bottom:3px solid #07c160;border-left:3px solid #07c160;border-bottom-left-radius:6px;}
+.scan-corner.br{bottom:0;right:0;border-bottom:3px solid #07c160;border-right:3px solid #07c160;border-bottom-right-radius:6px;}
+.scan-line{position:absolute;left:6px;right:6px;height:2px;background:linear-gradient(90deg,transparent,#07c160 20%,#07c160 80%,transparent);box-shadow:0 0 10px rgba(7,193,96,.9);border-radius:2px;animation:scanMove 2.4s ease-in-out infinite;}
+@keyframes scanMove{0%{top:8px;}50%{top:calc(100% - 10px);}100%{top:8px;}}
+.scan-tip{font-size:13.5px;color:rgba(255,255,255,.85);text-align:center;padding:0 40px;line-height:1.6;text-shadow:0 1px 3px rgba(0,0,0,.6);}
+.scan-demo-btn{display:none;border:0;background:rgba(7,193,96,.85);color:#fff;font-size:13px;padding:8px 18px;border-radius:18px;cursor:pointer;margin-top:-8px;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
+.scan-demo-btn.show{display:inline-block;}
+.scan-demo-btn:active{background:rgba(6,173,86,.95);}
+.scan-footer{flex-shrink:0;display:flex;justify-content:center;gap:52px;padding:18px 0 calc(28px + env(safe-area-inset-bottom));background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.45));}
+.scan-tab{border:0;background:none;color:rgba(255,255,255,.7);font-size:14px;cursor:pointer;padding:6px 4px;position:relative;transition:color .15s;text-shadow:0 1px 3px rgba(0,0,0,.6);}
+.scan-tab.active{color:#07c160;}
+.scan-tab.active::after{content:"";position:absolute;left:50%;bottom:-2px;transform:translateX(-50%);width:20px;height:2px;background:#07c160;border-radius:2px;}
+
+.browser-view{position:absolute;inset:0;background:#fff;z-index:230;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .32s cubic-bezier(.32,.72,0,1);}
+.browser-view.open{transform:translateY(0);}
+.browser-header{flex-shrink:0;height:48px;display:flex;align-items:center;gap:6px;padding:0 10px;background:#f7f7f7;border-bottom:1px solid #e0e0e0;}
+.browser-icon-btn{width:32px;height:32px;border-radius:50%;border:0;background:transparent;color:#191919;font-size:15px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.browser-icon-btn:active{background:#e6e6e6;}
+.browser-icon-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.browser-icon-btn.spin svg{animation:browserSpin .7s linear infinite;}
+@keyframes browserSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+.browser-url{flex:1;min-width:0;height:32px;line-height:32px;background:#fff;border-radius:16px;padding:0 14px;font-size:12.5px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid #e6e6e6;text-align:center;}
+.browser-body{flex:1;position:relative;background:#fff;overflow:hidden;}
+.browser-frame{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff;display:block;}
+.browser-loading{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#fff;color:#666;font-size:13px;z-index:3;}
+.browser-loading.show{display:flex;}
+.browser-spinner{width:30px;height:30px;border:3px solid #e6e6e6;border-top-color:#07c160;border-radius:50%;animation:browserSpin2 .8s linear infinite;}
+@keyframes browserSpin2{to{transform:rotate(360deg);}}
+.browser-fallback{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:30px;text-align:center;background:#fff;z-index:2;}
+.browser-fallback.show{display:flex;}
+.browser-fallback-icon{font-size:42px;}
+.browser-fallback-title{font-size:15px;color:#191919;font-weight:500;}
+.browser-fallback-text{font-size:13.5px;color:#666;line-height:1.6;word-break:break-all;max-width:300px;}
+.browser-fallback-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px;}
+.browser-fallback-btn{border:0;background:#07c160;color:#fff;font-size:13.5px;padding:9px 20px;border-radius:6px;cursor:pointer;transition:background .15s;}
+.browser-fallback-btn:active{background:#06ad56;}
+.browser-fallback-btn.ghost{background:#f2f2f2;color:#191919;}
+.browser-fallback-btn.ghost:active{background:#e6e6e6;}
+
+/* ================= 开屏 ================= */
+.splash{
+  position:absolute;inset:0;z-index:300;
+  background:linear-gradient(180deg,#2e2e2e 0%,#1a1a1a 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:22px;
+  transition:opacity .45s ease,visibility .45s ease;
+}
+.splash.hide{opacity:0;visibility:hidden;pointer-events:none;}
+.splash-logo{
+  width:96px;height:96px;border-radius:24px;
+  background:#07c160;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 12px 32px rgba(7,193,96,.35);
+  animation:splashPop .6s cubic-bezier(.2,1.2,.4,1) both;
+}
+.splash-logo svg{width:58px;height:58px;fill:#fff;}
+.splash-name{
+  color:#fff;font-size:22px;font-weight:600;letter-spacing:2px;
+  animation:splashFade .6s .15s ease both;
+}
+.splash-slogan{
+  color:rgba(255,255,255,.45);font-size:12.5px;letter-spacing:1px;
+  animation:splashFade .6s .3s ease both;
+}
+.splash-footer{
+  position:absolute;bottom:44px;left:0;right:0;
+  display:flex;justify-content:center;
+  color:rgba(255,255,255,.3);font-size:12px;letter-spacing:1px;
+  animation:splashFade .6s .5s ease both;
+}
+@keyframes splashPop{
+  0%{transform:scale(.6);opacity:0;}
+  100%{transform:scale(1);opacity:1;}
+}
+@keyframes splashFade{
+  0%{opacity:0;transform:translateY(8px);}
+  100%{opacity:1;transform:translateY(0);}
+}
+
+@media (max-width:520px),(max-height:900px){
+  body{background:#ededed;display:block;}
+  .phone{width:100vw;height:100vh;height:100dvh;border-radius:0;box-shadow:none;}
+  .island{display:none;}
+  .chat-view{top:0;}
+  .settings-view{top:0;}
+  .records-view{top:0;}
+  .messages-view{top:0;}
+  .scan-view{top:0;}
+  .browser-view{top:0;}
+  .tabbar{padding-bottom:env(safe-area-inset-bottom);height:calc(56px + env(safe-area-inset-bottom));}
+  .chat-input{padding-bottom:calc(10px + env(safe-area-inset-bottom));}
+  .vo-top{padding-top:calc(18px + env(safe-area-inset-top));height:calc(70px + env(safe-area-inset-top));}
+  .vo-bottom{padding-bottom:calc(22px + env(safe-area-inset-bottom));}
+  .vo-speed-wrap{bottom:calc(46px + env(safe-area-inset-bottom));}
+  .records-footer{padding-bottom:env(safe-area-inset-bottom);height:calc(64px + env(safe-area-inset-bottom));}
+  .scan-header{padding-top:env(safe-area-inset-top);height:calc(44px + env(safe-area-inset-top));}
+  .browser-header{padding-top:env(safe-area-inset-top);height:calc(48px + env(safe-area-inset-top));}
+  .plus-menu{top:44px;}
+}
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+  <div class="island"></div>
+
+  <!-- ========== 开屏 ========== -->
+  <div class="splash" id="splash">
+    <div class="splash-logo">
+      <svg viewBox="0 0 1024 1024">
+        <path d="M690.1 328.5c-12.5-1.2-23.5-1.8-34.4-1.8-135.6 0-245.6 82.2-245.6 183.6 0 101.4 110 183.6 245.6 183.6 28.5 0 55.8-3.6 81.1-10.1 4-1 8-2.1 11.9-3.3 1.3.9 2.7 1.9 4.1 2.8 16.9 11.2 59.9 26.7 77.5 29.8 0 0-13.7-16.4-14-37.3 0-5.9 3.5-10.9 8.4-16.1 24.6-25.8 40.8-56.5 40.8-90.7 0-101.4-110-183.6-245.6-183.6-.6 0-1.2 0-1.8 0z" opacity=".55"/>
+        <path d="M399.8 325.3C329.3 325.3 271.9 376.4 271.9 439.5c0 63 57.4 114.1 127.9 114.1 5.4 0 10.7-.3 16-.9 28.6 28.9 68.2 47.4 112.4 47.4 7.1 0 14.1-.5 21-1.4 7.4-1 14.6-2.5 21.6-4.4l-22.6-39.2c0 0 18.2-12.4 18.2-35.9 0-63-57.4-114.1-127.9-114.1-2.9 0-5.8.1-8.7.2z"/>
+      </svg>
+    </div>
+    <div class="splash-name">微信</div>
+    <div class="splash-slogan">连接你我，沟通无界</div>
+    <div class="splash-footer">腾讯出品</div>
+  </div>
+
+  <div class="content">
+
+    <section class="page active" id="page-wechat">
+      <div class="navbar">
+        <h1>微信</h1>
+        <div class="nav-right">
+          <button title="搜索" id="navSearch">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/></svg>
+          </button>
+          <button title="更多" id="navPlus">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="scroll" id="chatList"></div>
+    </section>
+
+    <section class="page" id="page-contact">
+      <div class="navbar">
+        <h1>通讯录</h1>
+        <div class="nav-right">
+          <button title="添加朋友"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+      </div>
+      <div class="scroll" id="contactList" style="position:relative;"></div>
+      <div class="index-bar" id="indexBar"></div>
+    </section>
+
+    <section class="page" id="page-discover">
+      <div class="navbar"><h1>发现</h1></div>
+      <div class="scroll" id="discoverList"></div>
+    </section>
+
+    <section class="page" id="page-me">
+      <div class="navbar"><h1>我</h1></div>
+      <div class="scroll" id="meList"></div>
+    </section>
+
+  </div>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab active" data-page="page-wechat" data-tab="wechat">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M9.1 3.4C5.2 3.4 2 5.9 2 9c0 1.8 1 3.4 2.6 4.4l-.7 2.2 2.5-1.3c.8.2 1.6.3 2.5.3h.6a5.6 5.6 0 01-.2-1.5c0-3 2.9-5.4 6.5-5.4h.6c-.6-2.5-3.5-4.3-7.3-4.3z"/>
+        <path d="M22 13.1c0-2.6-2.6-4.7-5.8-4.7s-5.8 2.1-5.8 4.7 2.6 4.7 5.8 4.7c.7 0 1.3-.1 1.9-.3l2.1 1.1-.6-1.8c1.5-.8 2.4-2.2 2.4-3.7z"/>
+      </svg>
+      <span>微信</span>
+      <em class="tab-badge" id="tabBadge" style="font-style:normal;display:none">0</em>
+    </button>
+
+    <button class="tab" data-page="page-contact" data-tab="contact">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="7.5" r="3.6"/>
+        <path d="M4.6 20c0-3.6 3.3-6.2 7.4-6.2s7.4 2.6 7.4 6.2"/>
+      </svg>
+      <span>通讯录</span>
+    </button>
+
+    <button class="tab" data-page="page-discover" data-tab="discover">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M15.6 8.4l-2.3 5.2-5.2 2.3 2.3-5.2z" fill="currentColor" stroke="none"/>
+      </svg>
+      <span>发现</span>
+    </button>
+
+    <button class="tab" data-page="page-me" data-tab="me">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <circle cx="12" cy="7.6" r="4"/>
+        <path d="M12 13c-4.6 0-8.4 2.6-8.4 5.9V20h16.8v-1.1C20.4 15.6 16.6 13 12 13z"/>
+      </svg>
+      <span>我</span>
+    </button>
+  </nav>
+
+  <section class="chat-view" id="chatView">
+    <header class="chat-header">
+      <button class="back-btn" id="backBtn">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <span class="chat-title" id="chatTitle"></span>
+      <button class="chat-more">
+        <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg>
+      </button>
+    </header>
+    <div class="chat-body" id="chatBody"></div>
+    <div class="chat-input">
+      <div class="emoji-panel" id="emojiPanel"></div>
+      <div class="input-row">
+        <button class="ib-btn" id="emojiBtn" type="button">😊</button>
+        <textarea id="msgInput" rows="1" placeholder=""></textarea>
+        <button class="send-btn" id="sendBtn">发送</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="settings-view" id="settingsView">
+    <header class="settings-header">
+      <button class="back-btn" id="settingsBack">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <span class="settings-title">设置</span>
+    </header>
+    <div class="settings-body">
+      <div class="settings-group-title">账号与安全</div>
+      <div class="settings-group">
+        <div class="settings-cell">
+          <div class="ico" style="width:38px;height:38px;border-radius:8px;background:#07c160;display:flex;align-items:center;justify-content:center;font-size:19px">🔐</div>
+          <span class="txt">账号与安全</span>
+          <svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+      <div class="settings-group-title">聊天</div>
+      <div class="settings-group">
+        <div class="settings-cell" id="goRecords">
+          <div class="ico" style="width:38px;height:38px;border-radius:8px;background:#3b7ef2;display:flex;align-items:center;justify-content:center;font-size:19px">💬</div>
+          <span class="txt">聊天记录</span>
+          <span class="sub" id="recordsCount"></span>
+          <svg class="chev" viewBox="0 0 24 24" style="margin-left:6px"><path d="M9 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+      <div class="settings-group-title">通用</div>
+      <div class="settings-group">
+        <div class="settings-cell">
+          <div class="ico" style="width:38px;height:38px;border-radius:8px;background:#8a8a8a;display:flex;align-items:center;justify-content:center;font-size:19px">⚙️</div>
+          <span class="txt">通用设置</span>
+          <svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </div>
+        <div class="settings-cell">
+          <div class="ico" style="width:38px;height:38px;border-radius:8px;background:#f5a623;display:flex;align-items:center;justify-content:center;font-size:19px">🔔</div>
+          <span class="txt">消息通知</span>
+          <svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+      <div class="settings-group-title">关于</div>
+      <div class="settings-group">
+        <div class="settings-cell">
+          <div class="ico" style="width:38px;height:38px;border-radius:8px;background:#e8899b;display:flex;align-items:center;justify-content:center;font-size:19px">📄</div>
+          <span class="txt">关于微信</span>
+          <svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="records-view" id="recordsView">
+    <header class="records-header">
+      <button class="back-btn" id="recordsBack">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <span class="records-title">聊天记录</span>
+      <button class="records-select-btn" id="recordsSelectBtn">多选</button>
+    </header>
+    <div class="records-body" id="recordsBody"></div>
+    <div class="records-footer" id="recordsFooter">
+      <button class="all-btn" id="recordsAllBtn">
+        <span class="records-check" id="allCheck">
+          <svg viewBox="0 0 24 24"><path d="M4.5 12.5l5 5 10-11"/></svg>
+        </span>
+        <span id="allText">全选</span>
+      </button>
+      <button class="del-btn" id="recordsDelBtn" disabled>删除</button>
+    </div>
+  </section>
+
+  <section class="messages-view" id="messagesView">
+    <header class="records-header">
+      <button class="back-btn" id="messagesBack">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <span class="records-title" id="messagesTitle">聊天记录</span>
+      <button class="records-select-btn" id="messagesSelectBtn">多选</button>
+    </header>
+    <div class="records-body" id="messagesBody"></div>
+    <div class="records-footer" id="messagesFooter">
+      <button class="all-btn" id="messagesAllBtn">
+        <span class="records-check" id="messagesAllCheck">
+          <svg viewBox="0 0 24 24"><path d="M4.5 12.5l5 5 10-11"/></svg>
+        </span>
+        <span id="messagesAllText">全选</span>
+      </button>
+      <button class="del-btn" id="messagesDelBtn" disabled>删除</button>
+    </div>
+  </section>
+
+  <div class="plus-menu" id="plusMenu">
+    <div class="plus-menu-item" data-act="group"><span class="pm-ico">💬</span><span>发起群聊</span></div>
+    <div class="plus-menu-item" data-act="add"><span class="pm-ico">👤</span><span>添加朋友</span></div>
+    <div class="plus-menu-item" data-act="scan"><span class="pm-ico">📷</span><span>扫一扫</span></div>
+    <div class="plus-menu-item" data-act="pay"><span class="pm-ico">💰</span><span>收付款</span></div>
+  </div>
+
+  <section class="scan-view" id="scanView">
+    <video class="scan-camera" id="scanCamera" playsinline webkit-playsinline muted autoplay></video>
+    <div class="scan-ui">
+      <header class="scan-header">
+        <button class="scan-close" id="scanClose" aria-label="关闭">✕</button>
+        <span class="scan-title">扫一扫</span>
+        <span class="scan-placeholder"></span>
+      </header>
+      <div class="scan-body">
+        <div class="scan-frame">
+          <div class="scan-corner tl"></div>
+          <div class="scan-corner tr"></div>
+          <div class="scan-corner bl"></div>
+          <div class="scan-corner br"></div>
+          <div class="scan-line"></div>
+        </div>
+        <p class="scan-tip" id="scanTip">将二维码放入框内，即可自动扫描</p>
+        <button class="scan-demo-btn" id="scanDemoBtn" type="button">模拟扫描结果</button>
+      </div>
+      <div class="scan-footer">
+        <button class="scan-tab active">扫码</button>
+        <button class="scan-tab">封面</button>
+        <button class="scan-tab">翻译</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="browser-view" id="browserView">
+    <header class="browser-header">
+      <button class="browser-icon-btn" id="browserClose" aria-label="退出">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <div class="browser-url" id="browserUrl">about:blank</div>
+      <button class="browser-icon-btn" id="browserRefresh" aria-label="刷新">
+        <svg viewBox="0 0 24 24">
+          <path d="M20 11a8 8 0 10-2.3 5.7"/>
+          <path d="M20 5v6h-6"/>
+        </svg>
+      </button>
+      <button class="browser-icon-btn" id="browserOpenNew" aria-label="在浏览器打开">
+        <svg viewBox="0 0 24 24">
+          <path d="M14 4h6v6"/>
+          <path d="M20 4L10 14"/>
+          <path d="M18 13v6a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h6"/>
+        </svg>
+      </button>
+    </header>
+    <div class="browser-body" id="browserBody">
+      <div class="browser-loading" id="browserLoading">
+        <div class="browser-spinner"></div>
+        <div id="browserLoadingText">正在加载…</div>
+      </div>
+      <div class="browser-fallback" id="browserFallback">
+        <div class="browser-fallback-icon" id="browserFallbackIcon">🔗</div>
+        <div class="browser-fallback-title" id="browserFallbackTitle">扫描结果</div>
+        <div class="browser-fallback-text" id="browserFallbackText"></div>
+        <div class="browser-fallback-actions">
+          <button class="browser-fallback-btn" id="browserCopyBtn" type="button">复制内容</button>
+          <button class="browser-fallback-btn ghost" id="browserOpenBtn" type="button" style="display:none">用浏览器打开</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="video-overlay" id="videoOverlay">
+    <video class="vo-video" id="voVideo" playsinline webkit-playsinline></video>
+    <div class="vo-ui show" id="voUI">
+      <div class="vo-top">
+        <button class="vo-close" id="voClose" aria-label="关闭">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="vo-center hidden" id="voCenter">
+        <button class="vo-toggle" id="voToggle">▶</button>
+      </div>
+      <div class="vo-speed-wrap">
+        <div class="vo-speed-menu" id="voSpeedMenu"></div>
+        <button class="vo-speed" id="voSpeedBtn">倍速</button>
+      </div>
+      <div class="vo-bottom">
+        <span class="vo-time" id="voCur">00:00</span>
+        <div class="vo-bar-wrap" id="voBarWrap">
+          <div class="vo-bar-bg"><div class="vo-bar" id="voBar"></div></div>
+        </div>
+        <span class="vo-time" id="voDur">00:00</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const VIDEO_SRC = '1.mp4';
+  const $ = (s) => document.querySelector(s);
+  const pad = (n) => String(n).padStart(2, '0');
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+  const MIN = 60000, DAY = 86400000, NOW = Date.now();
+  const sod = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const dayDiff = (ts) => Math.round((sod(new Date()) - sod(new Date(ts))) / DAY);
+
+  /* ================= 开屏 ================= */
+  const splash = $('#splash');
+  // 约 1.8 秒后隐藏开屏（淡出 0.45 秒）
+  setTimeout(() => {
+    splash.classList.add('hide');
+    // 完全隐藏后从 DOM 中移除，避免遮挡交互
+    setTimeout(() => {
+      if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
+    }, 500);
+  }, 1800);
+
+  /* ================================================================
+     ★★★ 阿杰第一条视频的固定发布时间：今天下午 13:00 ★★★
+     ================================================================ */
+  const FIXED_VIDEO_TS = (function () {
+    const d = new Date();
+    d.setHours(13, 0, 0, 0);
+    return d.getTime();
+  })();
+
+  function fmtListTime(ts) {
+    const d = new Date(ts);
+    if (dayDiff(ts) === 0) return pad(d.getHours()) + ':' + pad(d.getMinutes());
+    if (dayDiff(ts) === 1) return '昨天';
+    if (dayDiff(ts) < 7) return '星期' + '日一二三四五六'[d.getDay()];
+    return (d.getMonth() + 1) + '月' + d.getDate() + '日';
+  }
+  function fmtChatTime(ts) {
+    const d = new Date(ts);
+    const hm = pad(d.getHours()) + ':' + pad(d.getMinutes());
+    if (dayDiff(ts) === 0) return hm;
+    if (dayDiff(ts) === 1) return '昨天 ' + hm;
+    return (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + hm;
+  }
+  function fmtDur(sec) {
+    sec = Math.round(sec || 0);
+    if (!isFinite(sec) || sec < 0) sec = 0;
+    return pad(Math.floor(sec / 60)) + ':' + pad(sec % 60);
+  }
+
+  const ME = { name: '我', emoji: '🙂', bg: '#07c160' };
+  const chats = [{
+    id: 'ajie', name: '阿杰', emoji: '🎧', bg: '#7b68ee', unread: 1,
+    messages: [{
+      from: 'them', type: 'video', text: '', src: VIDEO_SRC,
+      poster: '', duration: '', ts: FIXED_VIDEO_TS
+    }]
+  }];
+
+  /* ================= 已读会话持久化 ================= */
+  let readChatIds = [];
+  try {
+    const raw = localStorage.getItem('wechat_readChats');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) readChatIds = parsed;
+    }
+  } catch (e) { readChatIds = []; }
+
+  chats.forEach((c) => {
+    if (readChatIds.includes(c.id)) {
+      c.unread = 0;
+      c.noBadge = true;
+    }
+  });
+
+  function markChatRead(id) {
+    if (!readChatIds.includes(id)) {
+      readChatIds.push(id);
+      try { localStorage.setItem('wechat_readChats', JSON.stringify(readChatIds)); } catch (e) {}
+    }
+  }
+
+  const contacts = [
+    { letter: 'A', list: [{ name: '阿杰', emoji: '🎧', bg: '#7b68ee' }] },
+    { letter: 'B', list: [{ name: '白露', emoji: '🌿', bg: '#07c160' }, { name: '毕明', emoji: '⛰️', bg: '#8a8a8a' }] },
+    { letter: 'C', list: [{ name: '陈晨', emoji: '🌻', bg: '#f0a020' }, { name: '崔悦', emoji: '🍰', bg: '#e8899b' }] },
+    { letter: 'H', list: [{ name: '韩雪', emoji: '❄️', bg: '#4a90d9' }] },
+    { letter: 'L', list: [{ name: '李娜', emoji: '💼', bg: '#576b95' }, { name: '林然', emoji: '🎨', bg: '#e05a5a' }] },
+    { letter: 'S', list: [{ name: '苏晴', emoji: '☀️', bg: '#f5a623' }] },
+    { letter: 'W', list: [{ name: '王强', emoji: '🐳', bg: '#3b7ef2' }, { name: '王小明', emoji: '🏀', bg: '#7b68ee' }] },
+    { letter: 'Z', list: [{ name: '张伟', emoji: '🧑‍💻', bg: '#4a90d9' }] }
+  ];
+
+  const quickContacts = [
+    { name: '新的朋友', emoji: '👋', bg: '#f5a623' },
+    { name: '群聊', emoji: '👥', bg: '#07c160' },
+    { name: '标签', emoji: '🏷️', bg: '#3b7ef2' },
+    { name: '公众号', emoji: '📣', bg: '#4a90d9' }
+  ];
+
+  const discoverGroups = [
+    [{ name: '朋友圈', emoji: '📷', bg: '#3b7ef2', dot: true }, { name: '视频号', emoji: '🎬', bg: '#f0a020' }],
+    [{ name: '扫一扫', emoji: '🔳', bg: '#4a90d9' }, { name: '摇一摇', emoji: '📳', bg: '#3b7ef2' }],
+    [{ name: '看一看', emoji: '👀', bg: '#f5a623' }, { name: '搜一搜', emoji: '🔍', bg: '#e05a5a' }],
+    [{ name: '直播', emoji: '📡', bg: '#e8899b' }, { name: '购物', emoji: '🛍️', bg: '#fa5151' }, { name: '游戏', emoji: '🎮', bg: '#7b68ee' }]
+  ];
+
+  const meGroups = [
+    [{ name: '服务', emoji: '💳', bg: '#07c160' }],
+    [
+      { name: '收藏', emoji: '⭐', bg: '#f5a623' },
+      { name: '朋友圈', emoji: '📷', bg: '#3b7ef2' },
+      { name: '卡包', emoji: '🎫', bg: '#4a90d9' },
+      { name: '表情', emoji: '😊', bg: '#f0a020' }
+    ],
+    [{ name: '设置', emoji: '⚙️', bg: '#8a8a8a', action: 'settings' }]
+  ];
+
+  const replies = ['好的👌', '收到~', '哈哈哈哈', '这个我得想想', '稍等，我看一下',
+    '嗯嗯，没问题', '明白了', '那我先忙了，回头聊', '👍', '可以可以', '晚点回复你哈'];
+  const EMOJIS = ['😀','😄','😁','😆','😊','😍','🤔','😅','😂','🤣','😉','😎',
+                  '🥳','😴','😭','😡','👍','👌','🙏','🎉','❤️','🔥','💪','🍺'];
+
+  const chatListEl = $('#chatList');
+  const contactListEl = $('#contactList');
+  const indexBarEl = $('#indexBar');
+  const discoverListEl = $('#discoverList');
+  const meListEl = $('#meList');
+  const tabbar = $('#tabbar');
+  const tabBadge = $('#tabBadge');
+  const chatView = $('#chatView');
+  const chatTitle = $('#chatTitle');
+  const chatBody = $('#chatBody');
+  const backBtn = $('#backBtn');
+  const msgInput = $('#msgInput');
+  const sendBtn = $('#sendBtn');
+  const emojiBtn = $('#emojiBtn');
+  const emojiPanel = $('#emojiPanel');
+
+  const navPlus = $('#navPlus');
+  const plusMenu = $('#plusMenu');
+  const scanView = $('#scanView');
+  const scanClose = $('#scanClose');
+  const scanCamera = $('#scanCamera');
+  const scanTip = $('#scanTip');
+  const scanDemoBtn = $('#scanDemoBtn');
+
+  const browserView = $('#browserView');
+  const browserBody = $('#browserBody');
+  const browserClose = $('#browserClose');
+  const browserUrlEl = $('#browserUrl');
+  const browserLoading = $('#browserLoading');
+  const browserLoadingText = $('#browserLoadingText');
+  const browserRefresh = $('#browserRefresh');
+  const browserOpenNew = $('#browserOpenNew');
+  const browserFallback = $('#browserFallback');
+  const browserFallbackIcon = $('#browserFallbackIcon');
+  const browserFallbackTitle = $('#browserFallbackTitle');
+  const browserFallbackText = $('#browserFallbackText');
+  const browserCopyBtn = $('#browserCopyBtn');
+  const browserOpenBtn = $('#browserOpenBtn');
+
+  const settingsView = $('#settingsView');
+  const settingsBack = $('#settingsBack');
+  const goRecords = $('#goRecords');
+  const recordsCount = $('#recordsCount');
+
+  const recordsView = $('#recordsView');
+  const recordsBack = $('#recordsBack');
+  const recordsSelectBtn = $('#recordsSelectBtn');
+  const recordsBody = $('#recordsBody');
+  const recordsAllBtn = $('#recordsAllBtn');
+  const allCheck = $('#allCheck');
+  const allText = $('#allText');
+  const recordsDelBtn = $('#recordsDelBtn');
+
+  const messagesView = $('#messagesView');
+  const messagesBack = $('#messagesBack');
+  const messagesSelectBtn = $('#messagesSelectBtn');
+  const messagesTitle = $('#messagesTitle');
+  const messagesBody = $('#messagesBody');
+  const messagesAllBtn = $('#messagesAllBtn');
+  const messagesAllCheck = $('#messagesAllCheck');
+  const messagesAllText = $('#messagesAllText');
+  const messagesDelBtn = $('#messagesDelBtn');
+
+  const videoOverlay = $('#videoOverlay');
+  const voVideo = $('#voVideo');
+  const voUI = $('#voUI');
+  const voClose = $('#voClose');
+  const voCenter = $('#voCenter');
+  const voToggle = $('#voToggle');
+  const voBarWrap = $('#voBarWrap');
+  const voBar = $('#voBar');
+  const voCur = $('#voCur');
+  const voDur = $('#voDur');
+  const voSpeedBtn = $('#voSpeedBtn');
+  const voSpeedMenu = $('#voSpeedMenu');
+
+  let currentId = null;
+  let multiMode = false;
+  const selectedIds = new Set();
+  let currentMsgChatId = null;
+  let msgMultiMode = false;
+  const selectedMsgs = new Set();
+
+  /* ================= 通用模态历史管理 ================= */
+  let modalHistoryPushed = false;
+
+  function getCleanUrl() {
+    return location.pathname + location.search + location.hash;
+  }
+
+  function pushModalHistory() {
+    if (modalHistoryPushed) return;
+    try {
+      history.pushState({ wechatModal: true }, '', getCleanUrl());
+    } catch (e) {}
+    modalHistoryPushed = true;
+  }
+
+  window.addEventListener('popstate', () => {
+    modalHistoryPushed = false;
+    if (browserView.classList.contains('open')) {
+      doCloseBrowser();
+    } else if (scanView.classList.contains('open')) {
+      closeScan();
+    }
+  });
+
+  /* ================= 相机 & 二维码 ================= */
+  let cameraStream = null;
+  let scanActive = false;
+
+  async function queryCameraPermission() {
+    if (navigator.permissions && navigator.permissions.query) {
+      try {
+        const status = await navigator.permissions.query({ name: 'camera' });
+        return status.state;
+      } catch (e) { return 'unknown'; }
+    }
+    return 'unknown';
+  }
+
+  async function startCamera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('当前浏览器不支持摄像头调用，请更换浏览器后重试。');
+      return false;
+    }
+    if (cameraStream) stopCamera();
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } },
+        audio: false
+      });
+      cameraStream = stream;
+      scanCamera.srcObject = stream;
+      const p = scanCamera.play();
+      if (p && p.catch) p.catch(() => {});
+      return true;
+    } catch (err) {
+      const name = err && err.name;
+      if (name === 'NotAllowedError' || name === 'SecurityError') {
+        alert('未获得相机权限，请在浏览器或系统设置中允许访问相机后重试。');
+      } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+        alert('未检测到可用的摄像头设备。');
+      } else if (name === 'NotReadableError' || name === 'TrackStartError') {
+        alert('摄像头被其他程序占用，请关闭后重试。');
+      } else {
+        alert('无法启动相机，请检查设备后重试。');
+      }
+      return false;
+    }
+  }
+
+  function stopCamera() {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach((t) => { try { t.stop(); } catch (e) {} });
+      cameraStream = null;
+    }
+    if (scanCamera) { try { scanCamera.srcObject = null; } catch (e) {} }
+  }
+
+  let scanRafId = null;
+  let barcodeDetector = null;
+  let scanning = false;
+  let lastDetect = 0;
+
+  function stopScanLoop() {
+    scanning = false;
+    if (scanRafId) { cancelAnimationFrame(scanRafId); scanRafId = null; }
+  }
+
+  function startScanLoop() {
+    if (scanning) return;
+    if (!('BarcodeDetector' in window)) {
+      scanTip.textContent = '当前环境不支持自动识别，可点击下方按钮模拟扫描';
+      scanDemoBtn.classList.add('show');
+      return;
+    }
+    try {
+      barcodeDetector = new BarcodeDetector({ formats: ['qr_code'] });
+    } catch (e) {
+      scanTip.textContent = '当前环境不支持自动识别，可点击下方按钮模拟扫描';
+      scanDemoBtn.classList.add('show');
+      return;
+    }
+    scanTip.textContent = '将二维码放入框内，即可自动扫描';
+    scanDemoBtn.classList.remove('show');
+    scanning = true;
+    lastDetect = 0;
+    scanRafId = requestAnimationFrame(scanTick);
+  }
+
+  async function scanTick(ts) {
+    if (!scanning) return;
+    if (ts - lastDetect > 220 && scanCamera.readyState >= 2 && scanCamera.videoWidth) {
+      lastDetect = ts;
+      try {
+        const codes = await barcodeDetector.detect(scanCamera);
+        if (codes && codes.length) {
+          const raw = (codes[0].rawValue || '').trim();
+          if (raw) { onScanSuccess(raw); return; }
+        }
+      } catch (e) {}
+    }
+    scanRafId = requestAnimationFrame(scanTick);
+  }
+
+  function getUrlProtocol(str) {
+    try { const u = new URL(str); return u.protocol; } catch (e) { return null; }
+  }
+
+  function trySystemScheme(url) {
+    return new Promise((resolve) => {
+      let settled = false;
+      const finish = (ok) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(ok);
+      };
+      const timer = setTimeout(() => finish(false), 1600);
+      const onVis = () => { if (document.hidden) finish(true); };
+      document.addEventListener('visibilitychange', onVis, { once: true });
+      let iframe = null;
+      try {
+        iframe = document.createElement('iframe');
+        iframe.style.cssText = 'position:absolute;width:0;height:0;border:0;opacity:0;pointer-events:none;';
+        iframe.src = url;
+        document.body.appendChild(iframe);
+      } catch (e) { finish(false); return; }
+      setTimeout(() => {
+        try { if (iframe && iframe.parentNode) iframe.parentNode.removeChild(iframe); } catch (e) {}
+      }, 2000);
+    });
+  }
+
+  async function onScanSuccess(raw) {
+    stopScanLoop();
+    if (!raw) return;
+    if (navigator.vibrate) { try { navigator.vibrate(60); } catch (e) {} }
+    scanActive = false;
+    scanView.classList.remove('open');
+    stopCamera();
+    stopScanLoop();
+
+    const protocol = getUrlProtocol(raw);
+    if (protocol === 'http:' || protocol === 'https:') {
+      openBrowserWithUrl(raw);
+      return;
+    }
+    if (protocol) {
+      const opened = await trySystemScheme(raw);
+      if (opened) {
+        modalHistoryPushed = false;
+        try { history.back(); } catch (e) {}
+        return;
+      }
+      openBrowserWithFallback({
+        icon: '📱', title: '未找到可处理的应用', text: raw,
+        showOpen: true, targetUrl: raw
+      });
+      return;
+    }
+    openBrowserWithFallback({ icon: '📄', title: '扫描结果', text: raw, showOpen: false });
+  }
+
+  async function openScan() {
+    const state = await queryCameraPermission();
+    if (state === 'denied') {
+      alert('相机权限已被拒绝，请在浏览器或系统设置中允许访问相机后重试。');
+      return;
+    }
+    scanActive = true;
+    scanView.classList.add('open');
+    pushModalHistory();
+
+    if (state === 'granted') {
+      const ok = await startCamera();
+      if (ok) startScanLoop();
+      return;
+    }
+    const ok = await startCamera();
+    if (!ok) {
+      scanView.classList.remove('open');
+      scanActive = false;
+      stopCamera();
+      modalHistoryPushed = false;
+      try { history.back(); } catch (e) {}
+    } else {
+      startScanLoop();
+    }
+  }
+
+  function closeScan() {
+    scanActive = false;
+    scanView.classList.remove('open');
+    stopCamera();
+    stopScanLoop();
+  }
+
+  /* ================= 内置浏览器 ================= */
+  let browserFrame = null;
+  let lastScanResult = '';
+  let currentBrowserUrl = '';
+  let currentFallbackTarget = '';
+  let browserLoadTimer = null;
+  let browserSessionId = 0;
+
+  function onBrowserFrameLoad() {
+    clearTimeout(browserLoadTimer);
+    hideBrowserLoading();
+  }
+
+  function createBrowserFrame() {
+    const f = document.createElement('iframe');
+    f.className = 'browser-frame';
+    f.id = 'browserFrame';
+    f.setAttribute('referrerpolicy', 'no-referrer');
+    f.setAttribute('sandbox',
+      'allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads');
+    f.addEventListener('load', onBrowserFrameLoad);
+    return f;
+  }
+
+  function destroyBrowserFrame() {
+    try {
+      if (browserFrame) {
+        try { browserFrame.src = 'about:blank'; } catch (e) {}
+        if (browserFrame.parentNode) browserFrame.parentNode.removeChild(browserFrame);
+      }
+    } catch (e) { console.warn('销毁内置浏览器 iframe 失败', e); }
+    browserFrame = createBrowserFrame();
+    if (browserBody) browserBody.insertBefore(browserFrame, browserLoading);
+  }
+
+  function isHttpUrl(str) {
+    try {
+      const u = new URL(str);
+      return u.protocol === 'http:' || u.protocol === 'https:';
+    } catch (e) { return false; }
+  }
+
+  function showBrowserLoading(text) {
+    browserLoadingText.textContent = text || '正在加载…';
+    browserLoading.classList.add('show');
+  }
+  function hideBrowserLoading() { browserLoading.classList.remove('show'); }
+  function hideBrowserFallback() { browserFallback.classList.remove('show'); }
+
+  function showBrowserFallback(opts) {
+    if (browserFrame) browserFrame.style.display = 'none';
+    hideBrowserLoading();
+    browserFallback.classList.add('show');
+    browserFallbackIcon.textContent = opts.icon || '🔗';
+    browserFallbackTitle.textContent = opts.title || '扫描结果';
+    browserFallbackText.textContent = opts.text || '';
+    browserOpenBtn.style.display = opts.showOpen ? 'inline-block' : 'none';
+    currentFallbackTarget = opts.targetUrl || '';
+  }
+
+  function loadBrowserUrl(url) {
+    currentBrowserUrl = url;
+    currentFallbackTarget = '';
+    browserUrlEl.textContent = url;
+    if (browserFrame) browserFrame.style.display = 'block';
+    hideBrowserFallback();
+    showBrowserLoading('正在加载…');
+    const mySession = ++browserSessionId;
+    try { browserFrame.src = 'about:blank'; } catch (e) {}
+    setTimeout(() => {
+      if (mySession !== browserSessionId) return;
+      try { browserFrame.src = url; } catch (e) {}
+    }, 30);
+    clearTimeout(browserLoadTimer);
+    browserLoadTimer = setTimeout(() => {
+      if (mySession !== browserSessionId) return;
+      if (browserLoading.classList.contains('show')) {
+        hideBrowserLoading();
+        showBrowserFallback({
+          icon: '🚫', title: '无法在应用内打开',
+          text: '该网站不允许嵌入显示。\n可复制链接或选择“用浏览器打开”。',
+          showOpen: true, targetUrl: url
+        });
+      }
+    }, 12000);
+  }
+
+  function openBrowserWithUrl(url) {
+    lastScanResult = url;
+    hideBrowserFallback();
+    hideBrowserLoading();
+    if (browserFrame) browserFrame.style.display = 'block';
+    loadBrowserUrl(url);
+    browserView.classList.add('open');
+    pushModalHistory();
+  }
+
+  function openBrowserWithFallback(opts) {
+    lastScanResult = opts.text || '';
+    browserUrlEl.textContent = opts.targetUrl || '扫描结果';
+    showBrowserFallback(opts);
+    browserView.classList.add('open');
+    pushModalHistory();
+  }
+
+  function goHome() {
+    document.querySelectorAll('.page').forEach((p) => {
+      p.classList.toggle('active', p.id === 'page-wechat');
+    });
+    document.querySelectorAll('.tab').forEach((t) => {
+      t.classList.toggle('active', t.dataset.page === 'page-wechat');
+    });
+  }
+
+  function doCloseBrowser() {
+    browserView.classList.remove('open');
+    clearTimeout(browserLoadTimer);
+    browserLoadTimer = null;
+    browserSessionId++;
+    destroyBrowserFrame();
+    currentBrowserUrl = '';
+    currentFallbackTarget = '';
+    lastScanResult = '';
+    browserUrlEl.textContent = 'about:blank';
+    hideBrowserLoading();
+    hideBrowserFallback();
+    if (browserFrame) browserFrame.style.display = 'block';
+
+    if (scanActive) closeScan();
+    closeChat();
+    closeSettings();
+    closeRecords();
+    closeMessagesView();
+    if (videoOverlay.classList.contains('show')) closeVideoPlayer();
+    closePlusMenu();
+
+    goHome();
+  }
+
+  browserClose.addEventListener('click', () => {
+    if (modalHistoryPushed) {
+      try { history.back(); return; } catch (e) {}
+    }
+    doCloseBrowser();
+  });
+
+  browserRefresh.addEventListener('click', () => {
+    const url = currentBrowserUrl || currentFallbackTarget;
+    if (!url) return;
+    browserRefresh.classList.add('spin');
+    setTimeout(() => browserRefresh.classList.remove('spin'), 700);
+    if (isHttpUrl(url)) {
+      loadBrowserUrl(url);
+    } else {
+      trySystemScheme(url).then((opened) => {
+        if (!opened) {
+          showBrowserFallback({
+            icon: '📱', title: '未找到可处理的应用', text: url,
+            showOpen: true, targetUrl: url
+          });
+        }
+      });
+    }
+  });
+
+  function openInSystemBrowser() {
+    const url = currentFallbackTarget || currentBrowserUrl || lastScanResult;
+    if (!url) return;
+    try {
+      const w = window.open(url, '_blank', 'noopener,noreferrer');
+      if (!w) window.location.href = url;
+    } catch (e) {
+      try { window.location.href = url; } catch (e2) {
+        alert('无法打开链接，请复制后手动访问。');
+      }
+    }
+  }
+  browserOpenNew.addEventListener('click', openInSystemBrowser);
+  browserOpenBtn.addEventListener('click', openInSystemBrowser);
+
+  browserCopyBtn.addEventListener('click', async () => {
+    const content = lastScanResult || currentFallbackTarget || currentBrowserUrl;
+    if (!content) return;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(content);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = content;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      alert('已复制到剪贴板');
+    } catch (e) { alert('复制失败，请手动选择内容复制'); }
+  });
+
+  scanDemoBtn.addEventListener('click', () => {
+    onScanSuccess('https://www.example.com/');
+  });
+
+  scanClose.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (modalHistoryPushed) {
+      try { history.back(); return; } catch (e) {}
+    }
+    closeScan();
+  });
+
+  scanView.querySelectorAll('.scan-tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      scanView.querySelectorAll('.scan-tab').forEach((t) => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+
+  /* ================= 预览文本 ================= */
+  function previewText(m) {
+    if (!m) return '';
+    if (m.type === 'video') return '[视频]';
+    return m.text;
+  }
+
+  const lastMsg = (c) => c.messages[c.messages.length - 1];
+  const lastTs = (c) => (lastMsg(c) ? lastMsg(c).ts : 0);
+
+  function renderChatList() {
+    if (!chats.length) {
+      chatListEl.innerHTML = `
+        <div class="empty">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 3C6.5 3 2 6.6 2 11c0 2.6 1.5 4.9 3.8 6.4L5 21.5l4.6-2.3c.8.2 1.6.3 2.4.3 5.5 0 10-3.6 10-8S17.5 3 12 3zm-3.2 9.3a1.2 1.2 0 110-2.4 1.2 1.2 0 010 2.4zm6.4 0a1.2 1.2 0 110-2.4 1.2 1.2 0 010 2.4z"/>
+          </svg>
+          <p>暂无聊天</p>
+          <small>去通讯录找个朋友聊聊吧</small>
+        </div>`;
+      updateTabBadge();
+      return;
+    }
+    const list = chats.slice().sort((a, b) => lastTs(b) - lastTs(a));
+    chatListEl.innerHTML = list.map((c) => {
+      const last = lastMsg(c);
+      const isVideo = last && last.type === 'video';
+      const showBadge = c.unread && !c.noBadge;
+      const badge = showBadge
+        ? `<span class="badge">${c.unread > 99 ? '99+' : c.unread}</span>` : '';
+      return `
+        <div class="c-item" data-id="${c.id}">
+          <div class="avatar" style="width:48px;height:48px;background:${c.bg}">${c.emoji}</div>
+          <div class="c-main">
+            <div class="c-top">
+              <span class="c-name">${esc(c.name)}</span>
+              <span class="c-time">${last ? fmtListTime(last.ts) : ''}</span>
+            </div>
+            <div class="c-bot">
+              <span class="c-prev${isVideo ? ' video' : ''}">${esc(previewText(last))}</span>
+              ${badge}
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+    updateTabBadge();
+  }
+
+  function updateTabBadge() {
+    const total = chats.reduce((s, c) => {
+      if (c.noBadge) return s;
+      return s + (c.unread || 0);
+    }, 0);
+    if (total > 0) {
+      tabBadge.textContent = total > 99 ? '99+' : total;
+      tabBadge.style.display = 'flex';
+    } else {
+      tabBadge.style.display = 'none';
+    }
+  }
+
+  function renderContacts() {
+    let html = '<div class="cell-group">';
+    quickContacts.forEach((q) => {
+      html += `
+        <div class="cell">
+          <div class="ico" style="background:${q.bg}">${q.emoji}</div>
+          <span class="txt">${q.name}</span>
+          <svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </div>`;
+    });
+    html += '</div>';
+    contacts.forEach((g) => {
+      html += `<div class="letter-head" id="head-${g.letter}">${g.letter}</div><div class="cell-group">`;
+      g.list.forEach((p) => {
+        html += `
+          <div class="cell contact-cell"
+               data-name="${esc(p.name)}"
+               data-emoji="${p.emoji}"
+               data-bg="${p.bg}">
+            <div class="ico" style="background:${p.bg};font-size:20px">${p.emoji}</div>
+            <span class="txt">${p.name}</span>
+            <svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+          </div>`;
+      });
+      html += '</div>';
+    });
+    contactListEl.innerHTML = html;
+    indexBarEl.innerHTML = contacts.map((g) => `<span data-l="${g.letter}">${g.letter}</span>`).join('');
+  }
+
+  indexBarEl.addEventListener('click', (e) => {
+    const s = e.target.closest('span');
+    if (!s) return;
+    const head = document.getElementById('head-' + s.dataset.l);
+    if (head) contactListEl.scrollTop = head.offsetTop;
+  });
+
+  function renderDiscover() {
+    discoverListEl.innerHTML = discoverGroups.map((g) => `
+      <div class="cell-group">
+        ${g.map((it) => `
+          <div class="cell">
+            <div class="disc-ico" style="background:${it.bg}">${it.emoji}</div>
+            <span class="txt">${it.name}</span>
+            ${it.dot ? '<span class="dot-red" style="margin-right:6px"></span>' : ''}
+            <svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+          </div>`).join('')}
+      </div>`).join('');
+  }
+
+  function renderMe() {
+    let html = `
+      <div class="me-header">
+        <div class="avatar" style="background:${ME.bg}">${ME.emoji}</div>
+        <div>
+          <div class="me-name">微信用户</div>
+          <div class="me-id">微信号：wxid_8k2m3n</div>
+        </div>
+        <svg class="chev" viewBox="0 0 24 24" style="width:18px;height:18px;margin-left:auto">
+          <path d="M9 5l7 7-7 7" stroke="#c8c8c8" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>`;
+    html += meGroups.map((g) => `
+      <div class="cell-group">
+        ${g.map((it) => `
+          <div class="cell" ${it.action ? `data-action="${it.action}"` : ''}>
+            <div class="ico" style="background:${it.bg};font-size:20px">${it.emoji}</div>
+            <span class="txt">${it.name}</span>
+            <svg class="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+          </div>`).join('')}
+      </div>`).join('');
+    meListEl.innerHTML = html;
+  }
+
+  /* ================= 首页加号下拉菜单 ================= */
+  function openPlusMenu() { plusMenu.classList.add('show'); }
+  function closePlusMenu() { plusMenu.classList.remove('show'); }
+  function togglePlusMenu() {
+    if (plusMenu.classList.contains('show')) closePlusMenu();
+    else openPlusMenu();
+  }
+
+  navPlus.addEventListener('click', (e) => {
+    e.stopPropagation();
+    togglePlusMenu();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!plusMenu.contains(e.target) && e.target !== navPlus) closePlusMenu();
+  });
+
+  plusMenu.addEventListener('click', (e) => {
+    const item = e.target.closest('.plus-menu-item');
+    if (!item) return;
+    e.stopPropagation();
+    closePlusMenu();
+    const act = item.dataset.act;
+    if (act === 'scan') {
+      openScan();
+    } else if (act === 'group') {
+      window.alert('发起群聊（演示）');
+    } else if (act === 'add') {
+      window.alert('添加朋友（演示）');
+    } else if (act === 'pay') {
+      window.alert('收付款（演示）');
+    }
+  });
+
+  /* ================= 设置页 ================= */
+  function openSettings() {
+    updateRecordsCount();
+    settingsView.classList.add('open');
+  }
+  function closeSettings() { settingsView.classList.remove('open'); }
+  function updateRecordsCount() {
+    const n = chats.length;
+    recordsCount.textContent = n ? `${n} 个会话` : '暂无';
+  }
+
+  settingsBack.addEventListener('click', closeSettings);
+  meListEl.addEventListener('click', (e) => {
+    const cell = e.target.closest('.cell[data-action="settings"]');
+    if (cell) openSettings();
+  });
+
+  /* ================= 聊天记录管理 ================= */
+  function renderRecords() {
+    updateRecordsCount();
+    if (!chats.length) {
+      recordsBody.innerHTML = '<div class="records-empty">暂无聊天记录</div>';
+      recordsSelectBtn.style.visibility = 'hidden';
+      updateFooter();
+      return;
+    }
+    recordsSelectBtn.style.visibility = 'visible';
+    const list = chats.slice().sort((a, b) => lastTs(b) - lastTs(a));
+    recordsBody.innerHTML =
+      '<div class="records-tip">点击账号可查看并删除其中消息，或点右上角「多选」批量删除整个会话。</div>' +
+      '<div class="records-group">' +
+      list.map((c) => {
+        const n = c.messages.length;
+        const checked = selectedIds.has(c.id) ? ' checked' : '';
+        return `
+          <div class="records-item${checked}" data-id="${c.id}">
+            <span class="records-check">
+              <svg viewBox="0 0 24 24"><path d="M4.5 12.5l5 5 10-11"/></svg>
+            </span>
+            <div class="avatar" style="width:40px;height:40px;background:${c.bg};font-size:20px">${c.emoji}</div>
+            <div class="records-item-main">
+              <div class="records-item-name">${esc(c.name)}</div>
+              <div class="records-item-sub">${n} 条消息</div>
+            </div>
+            <button class="records-del" type="button" data-del="${c.id}">删除</button>
+          </div>`;
+      }).join('') + '</div>';
+    updateFooter();
+  }
+
+  function updateFooter() {
+    const total = chats.length;
+    const n = selectedIds.size;
+    recordsDelBtn.textContent = n ? `删除(${n})` : '删除';
+    recordsDelBtn.disabled = n === 0;
+    if (total > 0 && n === total) {
+      allText.textContent = '取消全选';
+      allCheck.style.background = '#07c160';
+      allCheck.style.borderColor = '#07c160';
+      allCheck.querySelector('svg').style.opacity = '1';
+    } else {
+      allText.textContent = '全选';
+      allCheck.style.background = '#fff';
+      allCheck.style.borderColor = '#ccc';
+      allCheck.querySelector('svg').style.opacity = '0';
+    }
+  }
+
+  function openRecords() {
+    multiMode = false;
+    selectedIds.clear();
+    recordsView.classList.remove('multi');
+    recordsSelectBtn.textContent = '多选';
+    renderRecords();
+    recordsView.classList.add('open');
+  }
+  function closeRecords() { recordsView.classList.remove('open'); }
+
+  goRecords.addEventListener('click', openRecords);
+  recordsBack.addEventListener('click', closeRecords);
+
+  recordsSelectBtn.addEventListener('click', () => {
+    if (!chats.length) return;
+    multiMode = !multiMode;
+    if (!multiMode) selectedIds.clear();
+    recordsView.classList.toggle('multi', multiMode);
+    recordsSelectBtn.textContent = multiMode ? '取消' : '多选';
+    renderRecords();
+  });
+
+  recordsBody.addEventListener('click', (e) => {
+    const delBtn = e.target.closest('.records-del');
+    if (delBtn) {
+      e.stopPropagation();
+      singleDeleteChat(delBtn.dataset.del);
+      return;
+    }
+    const item = e.target.closest('.records-item');
+    if (!item) return;
+    if (multiMode) {
+      const id = item.dataset.id;
+      if (selectedIds.has(id)) selectedIds.delete(id);
+      else selectedIds.add(id);
+      item.classList.toggle('checked', selectedIds.has(id));
+      updateFooter();
+    } else {
+      openMessagesView(item.dataset.id);
+    }
+  });
+
+  function singleDeleteChat(id) {
+    const idx = chats.findIndex((c) => c.id === id);
+    if (idx < 0) return;
+    const chat = chats[idx];
+    const ok = window.confirm(`确定删除与「${chat.name}」的全部聊天记录吗？\n删除后不可恢复。`);
+    if (!ok) return;
+    removeChats([id]);
+  }
+
+  recordsAllBtn.addEventListener('click', () => {
+    const total = chats.length;
+    if (!total) return;
+    if (selectedIds.size === total) selectedIds.clear();
+    else chats.forEach((c) => selectedIds.add(c.id));
+    recordsBody.querySelectorAll('.records-item').forEach((el) => {
+      el.classList.toggle('checked', selectedIds.has(el.dataset.id));
+    });
+    updateFooter();
+  });
+
+  recordsDelBtn.addEventListener('click', () => {
+    const ids = Array.from(selectedIds);
+    if (!ids.length) return;
+    const ok = window.confirm(`确定删除选中的 ${ids.length} 个账号的聊天记录吗？\n删除后不可恢复。`);
+    if (!ok) return;
+    removeChats(ids);
+    selectedIds.clear();
+    multiMode = false;
+    recordsView.classList.remove('multi');
+    recordsSelectBtn.textContent = '多选';
+    renderRecords();
+  });
+
+  function removeChats(ids) {
+    ids.forEach((id) => {
+      const i = chats.findIndex((c) => c.id === id);
+      if (i < 0) return;
+      if (currentId === id) {
+        currentId = null;
+        chatView.classList.remove('open');
+      }
+      chats.splice(i, 1);
+      const ri = readChatIds.indexOf(id);
+      if (ri >= 0) {
+        readChatIds.splice(ri, 1);
+        try { localStorage.setItem('wechat_readChats', JSON.stringify(readChatIds)); } catch (e) {}
+      }
+    });
+    renderChatList();
+    renderRecords();
+  }
+
+  /* ================= 消息列表 ================= */
+  function renderMessagesList() {
+    const chat = chats.find((c) => c.id === currentMsgChatId);
+    if (!chat) {
+      messagesBody.innerHTML = '<div class="records-empty">会话不存在</div>';
+      messagesSelectBtn.style.visibility = 'hidden';
+      updateMessagesFooter();
+      return;
+    }
+    messagesTitle.textContent = chat.name;
+    if (!chat.messages.length) {
+      messagesBody.innerHTML = '<div class="records-empty">该账号暂无聊天记录</div>';
+      messagesSelectBtn.style.visibility = 'hidden';
+      updateMessagesFooter();
+      return;
+    }
+    messagesSelectBtn.style.visibility = 'visible';
+    messagesBody.innerHTML =
+      '<div class="records-tip">点击「删除」删除单条消息，或点右上角「多选」批量删除。</div>' +
+      '<div class="records-group">' +
+      chat.messages.map((m, i) => {
+        const isVideo = m.type === 'video';
+        const isMe = m.from === 'me';
+        const text = isVideo ? '[视频]' : m.text;
+        const checked = selectedMsgs.has(m) ? ' checked' : '';
+        const fromCls = isMe ? ' from-me' : '';
+        return `
+          <div class="msg-record-item${checked}" data-idx="${i}">
+            <span class="records-check">
+              <svg viewBox="0 0 24 24"><path d="M4.5 12.5l5 5 10-11"/></svg>
+            </span>
+            <div class="msg-record-main">
+              <div class="msg-record-text${isVideo ? ' video' : ''}${fromCls}">${esc(text)}</div>
+              <div class="msg-record-sub">${fmtChatTime(m.ts)}</div>
+            </div>
+            <button class="msg-record-del records-del" type="button" data-idx="${i}">删除</button>
+          </div>`;
+      }).join('') + '</div>';
+    updateMessagesFooter();
+  }
+
+  function updateMessagesFooter() {
+    const chat = chats.find((c) => c.id === currentMsgChatId);
+    const total = chat ? chat.messages.length : 0;
+    const n = selectedMsgs.size;
+    messagesDelBtn.textContent = n ? `删除(${n})` : '删除';
+    messagesDelBtn.disabled = n === 0;
+    if (total > 0 && n === total) {
+      messagesAllText.textContent = '取消全选';
+      messagesAllCheck.style.background = '#07c160';
+      messagesAllCheck.style.borderColor = '#07c160';
+      messagesAllCheck.querySelector('svg').style.opacity = '1';
+    } else {
+      messagesAllText.textContent = '全选';
+      messagesAllCheck.style.background = '#fff';
+      messagesAllCheck.style.borderColor = '#ccc';
+      messagesAllCheck.querySelector('svg').style.opacity = '0';
+    }
+  }
+
+  function openMessagesView(chatId) {
+    currentMsgChatId = chatId;
+    msgMultiMode = false;
+    selectedMsgs.clear();
+    messagesView.classList.remove('multi');
+    messagesSelectBtn.textContent = '多选';
+    renderMessagesList();
+    messagesView.classList.add('open');
+  }
+
+  function closeMessagesView() {
+    messagesView.classList.remove('open');
+    msgMultiMode = false;
+    selectedMsgs.clear();
+    messagesView.classList.remove('multi');
+    messagesSelectBtn.textContent = '多选';
+  }
+
+  messagesBack.addEventListener('click', closeMessagesView);
+
+  messagesSelectBtn.addEventListener('click', () => {
+    const chat = chats.find((c) => c.id === currentMsgChatId);
+    if (!chat || !chat.messages.length) return;
+    msgMultiMode = !msgMultiMode;
+    if (!msgMultiMode) selectedMsgs.clear();
+    messagesView.classList.toggle('multi', msgMultiMode);
+    messagesSelectBtn.textContent = msgMultiMode ? '取消' : '多选';
+    renderMessagesList();
+  });
+
+  messagesBody.addEventListener('click', (e) => {
+    const delBtn = e.target.closest('.msg-record-del');
+    if (delBtn) {
+      e.stopPropagation();
+      singleDeleteMessage(+delBtn.dataset.idx);
+      return;
+    }
+    const item = e.target.closest('.msg-record-item');
+    if (!item) return;
+    if (!msgMultiMode) return;
+    const chat = chats.find((c) => c.id === currentMsgChatId);
+    if (!chat) return;
+    const idx = +item.dataset.idx;
+    const msg = chat.messages[idx];
+    if (!msg) return;
+    if (selectedMsgs.has(msg)) selectedMsgs.delete(msg);
+    else selectedMsgs.add(msg);
+    item.classList.toggle('checked', selectedMsgs.has(msg));
+    updateMessagesFooter();
+  });
+
+  function singleDeleteMessage(idx) {
+    const chat = chats.find((c) => c.id === currentMsgChatId);
+    if (!chat) return;
+    const msg = chat.messages[idx];
+    if (!msg) return;
+    const preview = msg.type === 'video' ? '[视频]' : (msg.text || '');
+    const short = preview.length > 20 ? preview.slice(0, 20) + '…' : preview;
+    const ok = window.confirm(`确定删除这条消息吗？\n「${short}」\n删除后不可恢复。`);
+    if (!ok) return;
+    chat.messages.splice(idx, 1);
+    if (currentId === chat.id) {
+      if (chat.messages.length) renderMessages(chat);
+      else chatBody.innerHTML = '';
+    }
+    renderChatList();
+    renderMessagesList();
+    renderRecords();
+    updateRecordsCount();
+  }
+
+  messagesAllBtn.addEventListener('click', () => {
+    const chat = chats.find((c) => c.id === currentMsgChatId);
+    if (!chat) return;
+    const total = chat.messages.length;
+    if (!total) return;
+    if (selectedMsgs.size === total) selectedMsgs.clear();
+    else chat.messages.forEach((m) => selectedMsgs.add(m));
+    messagesBody.querySelectorAll('.msg-record-item').forEach((el) => {
+      const m = chat.messages[+el.dataset.idx];
+      el.classList.toggle('checked', m && selectedMsgs.has(m));
+    });
+    updateMessagesFooter();
+  });
+
+  messagesDelBtn.addEventListener('click', () => {
+    const chat = chats.find((c) => c.id === currentMsgChatId);
+    if (!chat) return;
+    const n = selectedMsgs.size;
+    if (!n) return;
+    const ok = window.confirm(`确定删除选中的 ${n} 条消息吗？\n删除后不可恢复。`);
+    if (!ok) return;
+    chat.messages = chat.messages.filter((m) => !selectedMsgs.has(m));
+    selectedMsgs.clear();
+    msgMultiMode = false;
+    messagesView.classList.remove('multi');
+    messagesSelectBtn.textContent = '多选';
+    if (currentId === chat.id) {
+      if (chat.messages.length) renderMessages(chat);
+      else chatBody.innerHTML = '';
+    }
+    renderChatList();
+    renderMessagesList();
+    renderRecords();
+    updateRecordsCount();
+  });
+
+  /* ================= 视频气泡 ================= */
+  function videoBubble(m, idx) {
+    if (m.src) {
+      const thumbSrc = m.src.indexOf('#') >= 0 ? m.src : m.src + '#t=0.1';
+      const posterAttr = m.poster ? ` poster="${esc(m.poster)}"` : '';
+      return `
+        <div class="bubble video-bubble" data-act="open" data-mid="${idx}" data-src="${esc(m.src)}">
+          <video src="${esc(thumbSrc)}"${posterAttr} playsinline webkit-playsinline preload="metadata" muted></video>
+          <span class="play-btn">▶</span>
+          <span class="video-dur">${m.duration || '00:00'}</span>
+        </div>`;
+    }
+    return `
+      <div class="bubble video-bubble video-empty">
+        <span class="vc-icon">🎬</span>
+        <span class="vc-txt">暂无视频</span>
+      </div>`;
+  }
+
+  function renderMessages(chat) {
+    let html = '';
+    let prevTs = 0;
+    chat.messages.forEach((m, i) => {
+      if (m.ts - prevTs > 5 * MIN) {
+        html += `<div class="time-divider">${fmtChatTime(m.ts)}</div>`;
+      }
+      prevTs = m.ts;
+      const me = m.from === 'me';
+      const who = me ? ME : { emoji: chat.emoji, bg: chat.bg };
+      const av = `<div class="avatar" style="background:${who.bg}">${who.emoji}</div>`;
+      if (m.type === 'video') {
+        html += `<div class="msg${me ? ' me' : ''}">${av}${videoBubble(m, i)}</div>`;
+      } else {
+        html += `<div class="msg${me ? ' me' : ''}">${av}<div class="bubble">${esc(m.text)}</div></div>`;
+      }
+    });
+    chatBody.innerHTML = html;
+    applyVideoPosters(chat);
+  }
+
+  function applyVideoPosters(chat) {
+    chatBody.querySelectorAll('.video-bubble[data-act="open"]').forEach((el) => {
+      const v = el.querySelector('video');
+      if (!v || v.dataset.posterApplied) return;
+      v.dataset.posterApplied = '1';
+      const idx = +el.dataset.mid;
+      const m = chat.messages[idx];
+      if (!m || !m.src) return;
+      if (m.poster) { v.poster = m.poster; return; }
+      const off = document.createElement('video');
+      off.muted = true;
+      off.playsInline = true;
+      off.preload = 'auto';
+      off.src = m.src;
+      let settled = false;
+      const finish = (ok) => {
+        if (settled) return;
+        settled = true;
+        if (ok) {
+          try {
+            const c = document.createElement('canvas');
+            c.width = off.videoWidth || 320;
+            c.height = off.videoHeight || 180;
+            const ctx = c.getContext('2d');
+            ctx.drawImage(off, 0, 0, c.width, c.height);
+            const url = c.toDataURL('image/jpeg', 0.75);
+            m.poster = url;
+            if (v.isConnected) v.poster = url;
+          } catch (e) {}
+        }
+        try { off.removeAttribute('src'); off.load(); } catch (e) {}
+      };
+      off.addEventListener('loadeddata', () => {
+        if (off.duration && off.duration > 0.1) {
+          try { off.currentTime = 0.1; } catch (e) { finish(true); }
+        } else finish(true);
+      }, { once: true });
+      off.addEventListener('seeked', () => finish(true), { once: true });
+      off.addEventListener('error', () => finish(false), { once: true });
+      setTimeout(() => finish(false), 5000);
+      off.load();
+    });
+  }
+
+  function scrollBottom(smooth) {
+    requestAnimationFrame(() => {
+      chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+    });
+  }
+
+  function ensureChat(name, emoji, bg) {
+    let chat = chats.find((c) => c.name === name);
+    if (!chat) {
+      chat = {
+        id: 'c_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+        name, emoji, bg, unread: 0, messages: []
+      };
+      chats.push(chat);
+    }
+    return chat;
+  }
+
+  function openChat(id) {
+    const chat = chats.find((c) => c.id === id);
+    if (!chat) return;
+
+    currentId = id;
+    chat.unread = 0;
+    chat.noBadge = true;
+    markChatRead(id);
+
+    chatTitle.textContent = chat.name;
+
+    renderMessages(chat);
+    renderChatList();
+    updateTabBadge();
+    scrollBottom(false);
+    chatView.classList.add('open');
+  }
+
+  function closeChat() {
+    chatView.classList.remove('open');
+    emojiPanel.classList.remove('show');
+  }
+
+  function sendMessage() {
+    const text = msgInput.value.trim();
+    if (!text || !currentId) return;
+    const chat = chats.find((c) => c.id === currentId);
+    if (!chat) return;
+    chat.messages.push({ from: 'me', text, ts: Date.now() });
+    msgInput.value = '';
+    msgInput.style.height = 'auto';
+    updateSendBtn();
+    renderMessages(chat);
+    renderChatList();
+    scrollBottom(true);
+    scheduleReply(chat);
+  }
+
+  function scheduleReply(chat) {
+    setTimeout(() => {
+      if (!chats.includes(chat)) return;
+      chat.messages.push({
+        from: 'them',
+        text: replies[Math.floor(Math.random() * replies.length)],
+        ts: Date.now()
+      });
+      if (chat.id === currentId) {
+        renderMessages(chat);
+        scrollBottom(true);
+      } else if (!chat.noBadge) {
+        chat.unread = (chat.unread || 0) + 1;
+      }
+      renderChatList();
+      if (currentMsgChatId === chat.id) renderMessagesList();
+      renderRecords();
+    }, 700 + Math.random() * 1100);
+  }
+
+  function updateSendBtn() {
+    const has = msgInput.value.trim().length > 0;
+    sendBtn.disabled = !has;
+  }
+
+  /* ================= 全屏播放器 ================= */
+  const SPEEDS = [2, 1.5, 1.25, 1, 0.5];
+  let currentSpeed = 1;
+  let voSeeking = false;
+
+  function buildSpeedMenu() {
+    voSpeedMenu.innerHTML = SPEEDS.map((s) => {
+      const label = (Number.isInteger(s) ? s.toFixed(1) : String(s)) + 'x';
+      return `<button type="button" data-speed="${s}" class="${s === currentSpeed ? 'active' : ''}">${label}</button>`;
+    }).join('');
+  }
+
+  function applySpeed(s) {
+    currentSpeed = s;
+    try { voVideo.playbackRate = s; } catch (e) {}
+    voSpeedMenu.querySelectorAll('button').forEach((b) => {
+      b.classList.toggle('active', Number(b.dataset.speed) === s);
+    });
+  }
+
+  function openSpeedMenu() {
+    voSpeedMenu.classList.add('show');
+    voSpeedBtn.classList.add('open');
+  }
+  function closeSpeedMenu() {
+    voSpeedMenu.classList.remove('show');
+    voSpeedBtn.classList.remove('open');
+  }
+
+  function showVoUI() { voUI.classList.add('show'); }
+
+  function syncVoToggle() {
+    if (voVideo.paused) {
+      voToggle.textContent = '▶';
+      voCenter.classList.remove('hidden');
+    } else {
+      voCenter.classList.add('hidden');
+    }
+  }
+
+  function openVideoPlayer(src) {
+    if (!src) return;
+    voVideo.src = src;
+    applySpeed(1);
+    closeSpeedMenu();
+    videoOverlay.classList.add('show');
+    showVoUI();
+    voCur.textContent = '00:00';
+    voDur.textContent = '00:00';
+    voBar.style.width = '0%';
+    syncVoToggle();
+    const p = voVideo.play();
+    if (p && p.catch) p.catch(() => {});
+  }
+
+  function closeVideoPlayer() {
+    try { voVideo.pause(); } catch (e) {}
+    voVideo.removeAttribute('src');
+    try { voVideo.load(); } catch (e) {}
+    videoOverlay.classList.remove('show');
+    closeSpeedMenu();
+    voSeeking = false;
+  }
+
+  voClose.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeVideoPlayer();
+  });
+
+  voToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (voVideo.paused) { voVideo.play().catch(() => {}); }
+    else { voVideo.pause(); }
+  });
+
+  voSpeedBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (voSpeedMenu.classList.contains('show')) closeSpeedMenu();
+    else openSpeedMenu();
+  });
+
+  voSpeedMenu.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const btn = e.target.closest('button[data-speed]');
+    if (!btn) return;
+    applySpeed(Number(btn.dataset.speed));
+    closeSpeedMenu();
+  });
+
+  voVideo.addEventListener('click', () => {
+    closeSpeedMenu();
+    if (voVideo.paused) voVideo.play().catch(() => {});
+    else voVideo.pause();
+  });
+
+  voVideo.addEventListener('play', () => {
+    syncVoToggle();
+    showVoUI();
+    applySpeed(currentSpeed);
+  });
+  voVideo.addEventListener('pause', () => {
+    syncVoToggle();
+    showVoUI();
+  });
+  voVideo.addEventListener('ended', () => {
+    syncVoToggle();
+    showVoUI();
+  });
+  voVideo.addEventListener('timeupdate', () => {
+    if (!voVideo.duration || voSeeking) return;
+    const r = voVideo.currentTime / voVideo.duration;
+    voBar.style.width = (r * 100) + '%';
+    voCur.textContent = fmtDur(voVideo.currentTime);
+  });
+  voVideo.addEventListener('loadedmetadata', () => {
+    voDur.textContent = fmtDur(voVideo.duration);
+  });
+
+  function voSeekAt(clientX) {
+    const rect = voBarWrap.getBoundingClientRect();
+    let r = (clientX - rect.left) / rect.width;
+    r = Math.max(0, Math.min(1, r));
+    if (voVideo.duration) voVideo.currentTime = r * voVideo.duration;
+    voBar.style.width = (r * 100) + '%';
+    voCur.textContent = fmtDur(r * (voVideo.duration || 0));
+  }
+  voBarWrap.addEventListener('pointerdown', (e) => {
+    voSeeking = true;
+    closeSpeedMenu();
+    showVoUI();
+    voSeekAt(e.clientX);
+    try { voBarWrap.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+  voBarWrap.addEventListener('pointermove', (e) => {
+    if (voSeeking) voSeekAt(e.clientX);
+  });
+  function voSeekEnd() {
+    if (!voSeeking) return;
+    voSeeking = false;
+  }
+  window.addEventListener('pointerup', voSeekEnd);
+  window.addEventListener('pointercancel', voSeekEnd);
+
+  document.addEventListener('click', (e) => {
+    if (!voSpeedMenu.contains(e.target) && e.target !== voSpeedBtn) closeSpeedMenu();
+  });
+
+  chatBody.addEventListener('click', (e) => {
+    const open = e.target.closest('[data-act="open"]');
+    if (!open) return;
+    const src = open.dataset.src;
+    if (src) openVideoPlayer(src);
+  });
+
+  chatBody.addEventListener('loadedmetadata', (e) => {
+    if (e.target.tagName !== 'VIDEO') return;
+    const wrap = e.target.closest('.video-bubble');
+    const dur = wrap && wrap.querySelector('.video-dur');
+    if (dur && isFinite(e.target.duration)) {
+      const txt = fmtDur(e.target.duration);
+      dur.textContent = txt;
+      const chat = chats.find((c) => c.id === currentId);
+      if (chat && wrap.dataset.mid != null) {
+        const m = chat.messages[+wrap.dataset.mid];
+        if (m) m.duration = txt;
+      }
+    }
+  }, true);
+
+  /* ================= 其他事件 ================= */
+  chatListEl.addEventListener('click', (e) => {
+    const item = e.target.closest('.c-item');
+    if (item) openChat(item.dataset.id);
+  });
+
+  contactListEl.addEventListener('click', (e) => {
+    const cell = e.target.closest('.contact-cell');
+    if (!cell) return;
+    const chat = ensureChat(cell.dataset.name, cell.dataset.emoji, cell.dataset.bg);
+    renderChatList();
+    openChat(chat.id);
+  });
+
+  backBtn.addEventListener('click', closeChat);
+  sendBtn.addEventListener('click', sendMessage);
+
+  msgInput.addEventListener('input', () => {
+    msgInput.style.height = 'auto';
+    msgInput.style.height = Math.min(msgInput.scrollHeight, 88) + 'px';
+    updateSendBtn();
+  });
+
+  msgInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  tabbar.addEventListener('click', (e) => {
+    const tab = e.target.closest('.tab');
+    if (!tab) return;
+    const pageId = tab.dataset.page;
+    document.querySelectorAll('.page').forEach((p) => p.classList.toggle('active', p.id === pageId));
+    document.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t === tab));
+    closePlusMenu();
+  });
+
+  /* ================= 表情 ================= */
+  function insertEmoji(emo) {
+    try {
+      const start = msgInput.selectionStart;
+      const end = msgInput.selectionEnd;
+      if (typeof start === 'number' && typeof end === 'number') {
+        msgInput.setRangeText(emo, start, end, 'end');
+      } else {
+        msgInput.value += emo;
+      }
+    } catch (e) { msgInput.value += emo; }
+    msgInput.dispatchEvent(new Event('input'));
+  }
+
+  let lastTouchAt = 0;
+
+  emojiBtn.addEventListener('mousedown', (e) => e.preventDefault());
+
+  emojiBtn.addEventListener('touchstart', (e) => {
+    lastTouchAt = Date.now();
+    e.preventDefault();
+    emojiPanel.classList.toggle('show');
+  }, { passive: false });
+
+  emojiBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (Date.now() - lastTouchAt < 600) return;
+    emojiPanel.classList.toggle('show');
+  });
+
+  emojiPanel.addEventListener('mousedown', (e) => e.preventDefault());
+
+  emojiPanel.addEventListener('touchstart', (e) => {
+    lastTouchAt = Date.now();
+    e.preventDefault();
+  }, { passive: false });
+
+  emojiPanel.addEventListener('touchend', (e) => {
+    const span = e.target.closest('span');
+    if (!span) return;
+    insertEmoji(span.textContent);
+  });
+
+  emojiPanel.addEventListener('click', (e) => {
+    if (Date.now() - lastTouchAt < 600) return;
+    const span = e.target.closest('span');
+    if (!span) return;
+    insertEmoji(span.textContent);
+  });
+
+  EMOJIS.forEach((emo) => {
+    const span = document.createElement('span');
+    span.textContent = emo;
+    emojiPanel.appendChild(span);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!emojiPanel.contains(e.target) && e.target !== emojiBtn) {
+      emojiPanel.classList.remove('show');
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (browserView.classList.contains('open')) {
+      browserClose.click();
+    } else if (scanView.classList.contains('open')) {
+      scanClose.click();
+    } else if (videoOverlay.classList.contains('show')) {
+      closeVideoPlayer();
+    } else if (messagesView.classList.contains('open')) {
+      closeMessagesView();
+    } else if (recordsView.classList.contains('open')) {
+      closeRecords();
+    } else if (settingsView.classList.contains('open')) {
+      closeSettings();
+    } else if (plusMenu.classList.contains('show')) {
+      closePlusMenu();
+    }
+  });
+
+  /* ================= 前后台切换 ================= */
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      if (scanActive) {
+        stopCamera();
+        stopScanLoop();
+      }
+      return;
+    }
+    if (!scanActive) return;
+    if (!scanView.classList.contains('open')) return;
+    startCamera().then((ok) => {
+      if (!ok) return;
+      if (scanActive && scanView.classList.contains('open')) startScanLoop();
+      else stopCamera();
+    });
+  });
+
+  window.addEventListener('pagehide', () => {
+    stopCamera();
+    stopScanLoop();
+  });
+
+  /* ================= 初始化 ================= */
+  destroyBrowserFrame();
+
+  try {
+    history.replaceState({ wechatRoot: true }, '', getCleanUrl());
+  } catch (e) {}
+
+  buildSpeedMenu();
+  renderChatList();
+  renderContacts();
+  renderDiscover();
+  renderMe();
+  updateSendBtn();
+})();
+</script>
+</body>
+</html>
